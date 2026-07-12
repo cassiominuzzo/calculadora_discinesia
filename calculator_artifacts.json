@@ -167,5 +167,107 @@
     "7": 0.963,
     "10": 0.9195
   },
-  "nota_competitivo": "Risco de 7 e 10 anos ajustado por risco competitivo (morte) via Aalen-Johansen; 3 e 5 anos praticamente inalterados."
+  "nota_competitivo": "Risco de 7 e 10 anos ajustado por risco competitivo (morte) via Aalen-Johansen; 3 e 5 anos praticamente inalterados.",
+  "modelo_dinamico": {
+    "nota": "Modelo dinamico: Total-6 + responsividade a levodopa (continua, % de melhora UPDRS-III OFF->ON). Uso em SEGUIMENTO, apos challenge OFF/ON. Exploratorio.",
+    "coeficientes": {
+      "updrs_totscore": 0.020425076642149983,
+      "ageonset": -0.03043798957782471,
+      "SEX": -0.2764210941464227,
+      "BMI": -0.039682961414182795,
+      "td_pigd_ratio": -0.08592272521441346,
+      "NP2FREZ": 0.3060286907021475,
+      "resp": 0.00814200919352043
+    },
+    "means": {
+      "updrs_totscore": 43.89085545722714,
+      "ageonset": 60.63341415121024,
+      "SEX": 0.6460176991150443,
+      "BMI": 26.97343000782892,
+      "td_pigd_ratio": 2.155813101710125,
+      "NP2FREZ": 0.19321533923303835,
+      "resp": 26.845632373663772
+    },
+    "baseline_survival_hor": {
+      "3": 0.8934294758876979,
+      "5": 0.7882025600424056,
+      "7": 0.6506111392985512,
+      "10": 0.45370999427149744
+    },
+    "baseline_survival_grid": {
+      "t": [
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        3.5,
+        4.0,
+        4.5,
+        5.0,
+        5.5,
+        6.0,
+        6.5,
+        7.0,
+        7.5,
+        8.0,
+        8.5,
+        9.0,
+        9.5,
+        10.0,
+        10.5,
+        11.0,
+        11.5,
+        12.0,
+        12.5,
+        13.0
+      ],
+      "S0": [
+        0.99755,
+        0.98038,
+        0.96227,
+        0.94141,
+        0.91724,
+        0.89343,
+        0.87074,
+        0.85477,
+        0.8317,
+        0.7882,
+        0.75795,
+        0.72213,
+        0.68366,
+        0.65061,
+        0.62003,
+        0.60705,
+        0.53903,
+        0.52026,
+        0.49104,
+        0.45371,
+        0.37726,
+        0.35768,
+        0.31502,
+        0.29627,
+        0.2534,
+        0.2534
+      ]
+    },
+    "resp_hr_por_10pct": 1.085,
+    "resp_hr_bruto": 1.0082,
+    "resp_p": 0.04465980598242057,
+    "resp_input": {
+      "min": -20.0,
+      "max": 100.0,
+      "step": 5.0,
+      "default": 27.0
+    },
+    "n": 678,
+    "eventos": 154,
+    "desempenho": {
+      "C_OOF": 0.689,
+      "C_apparent": 0.704,
+      "C_Total6_mesmo_n": 0.7,
+      "dC_apparent": 0.004
+    }
+  }
 }
