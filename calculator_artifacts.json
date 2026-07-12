@@ -1,0 +1,171 @@
+{
+  "modelo": "Total-6 (Cox PH)",
+  "desfecho": "Discinesia problemática (MDS-UPDRS 4.1>=2 OU 4.2>=2)",
+  "horizontes": [
+    3,
+    5,
+    7,
+    10
+  ],
+  "n": 813,
+  "eventos": 165,
+  "desempenho": {
+    "C_corrigido": 0.702,
+    "C_LOSO": 0.69,
+    "calibracao": "adequada 3/5/7/10a"
+  },
+  "coeficientes": {
+    "updrs_totscore": 0.01820067483435665,
+    "ageonset": -0.030261443489475598,
+    "SEX": -0.2919818089443341,
+    "BMI": -0.034380328769057285,
+    "td_pigd_ratio": -0.0649687671095703,
+    "NP2FREZ": 0.25736201135635567
+  },
+  "baseline_survival_hor": {
+    "3": 0.8878055187396627,
+    "5": 0.7816301115216746,
+    "7": 0.6425648352777131,
+    "10": 0.4508249519838049
+  },
+  "inputs": [
+    {
+      "var": "updrs_totscore",
+      "label": "MDS-UPDRS total (Partes I+II+III)",
+      "tipo": "slider",
+      "min": 0,
+      "max": 120,
+      "step": 1,
+      "default": 42,
+      "help": "Soma das Partes I, II e III do MDS-UPDRS (sem a Parte IV)."
+    },
+    {
+      "var": "ageonset",
+      "label": "Idade de início da DP (anos)",
+      "tipo": "slider",
+      "min": 25,
+      "max": 90,
+      "step": 1,
+      "default": 62,
+      "help": "Idade no primeiro sintoma motor."
+    },
+    {
+      "var": "SEX",
+      "label": "Sexo",
+      "tipo": "select",
+      "options": {
+        "Feminino": 0,
+        "Masculino": 1
+      },
+      "default": "Masculino",
+      "help": "Sexo biológico (feminino associa-se a maior risco)."
+    },
+    {
+      "var": "BMI",
+      "label": "IMC (kg/m²)",
+      "tipo": "slider",
+      "min": 15.0,
+      "max": 50.0,
+      "step": 0.1,
+      "default": 26.0,
+      "help": "Peso/altura². IMC menor associa-se a maior risco (dose/kg)."
+    },
+    {
+      "var": "td_pigd_ratio",
+      "label": "Razão TD/PIGD",
+      "tipo": "number",
+      "min": 0.0,
+      "max": 12.0,
+      "step": 0.1,
+      "default": 1.6,
+      "help": "Média dos itens de tremor ÷ média dos itens de PIGD (marcha, congelamento, instabilidade postural). <0,9 = PIGD-dominante (maior risco); >1,15 = tremor-dominante."
+    },
+    {
+      "var": "NP2FREZ",
+      "label": "Congelamento da marcha (MDS-UPDRS 2.13)",
+      "tipo": "select",
+      "options": {
+        "0 - Normal": 0,
+        "1 - Leve": 1,
+        "2 - Moderado": 2,
+        "3 - Grave": 3,
+        "4 - Incapacitante": 4
+      },
+      "default": "0 - Normal",
+      "help": "Item 2.13 (autorrelato de congelamento)."
+    }
+  ],
+  "means": {
+    "updrs_totscore": 43.539975399754,
+    "ageonset": 61.05613910933631,
+    "SEX": 0.6420664206642066,
+    "BMI": 26.87753059368698,
+    "td_pigd_ratio": 2.0831126394695665,
+    "NP2FREZ": 0.2091020910209102
+  },
+  "baseline_survival_grid": {
+    "t": [
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0,
+      4.5,
+      5.0,
+      5.5,
+      6.0,
+      6.5,
+      7.0,
+      7.5,
+      8.0,
+      8.5,
+      9.0,
+      9.5,
+      10.0,
+      10.5,
+      11.0,
+      11.5,
+      12.0,
+      12.5,
+      13.0
+    ],
+    "S0": [
+      0.99461,
+      0.97939,
+      0.96316,
+      0.93569,
+      0.91281,
+      0.88781,
+      0.86583,
+      0.8503,
+      0.8243,
+      0.78163,
+      0.75216,
+      0.71737,
+      0.68001,
+      0.64256,
+      0.61295,
+      0.60036,
+      0.534,
+      0.51601,
+      0.4873,
+      0.45082,
+      0.37507,
+      0.35605,
+      0.31482,
+      0.2966,
+      0.25566,
+      0.25566
+    ]
+  },
+  "competing_risk_factor": {
+    "3": 0.9972,
+    "5": 0.9821,
+    "7": 0.963,
+    "10": 0.9195
+  },
+  "nota_competitivo": "Risco de 7 e 10 anos ajustado por risco competitivo (morte) via Aalen-Johansen; 3 e 5 anos praticamente inalterados."
+}
