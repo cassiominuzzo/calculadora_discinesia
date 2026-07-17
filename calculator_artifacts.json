@@ -12,7 +12,7 @@
   "desempenho": {
     "C_corrigido": 0.702,
     "C_LOSO": 0.69,
-    "calibracao": "adequada 3/5/7/10a"
+    "calibracao": "adequate at 3/5/7/10y"
   },
   "coeficientes": {
     "updrs_totscore": 0.01820067483435665,
@@ -31,68 +31,68 @@
   "inputs": [
     {
       "var": "updrs_totscore",
-      "label": "MDS-UPDRS total (Partes I+II+III)",
+      "label": "Total MDS-UPDRS (Parts I+II+III)",
       "tipo": "slider",
       "min": 0,
       "max": 120,
       "step": 1,
       "default": 42,
-      "help": "Soma das Partes I, II e III do MDS-UPDRS (sem a Parte IV)."
+      "help": "Sum of Parts I, II and III of the MDS-UPDRS (Part IV excluded)."
     },
     {
       "var": "ageonset",
-      "label": "Idade de início da DP (anos)",
+      "label": "Age at PD onset (years)",
       "tipo": "slider",
       "min": 25,
       "max": 90,
       "step": 1,
       "default": 62,
-      "help": "Idade no primeiro sintoma motor."
+      "help": "Age at first motor symptom."
     },
     {
       "var": "SEX",
-      "label": "Sexo",
+      "label": "Sex",
       "tipo": "select",
       "options": {
-        "Feminino": 0,
-        "Masculino": 1
+        "Female": 0,
+        "Male": 1
       },
-      "default": "Masculino",
-      "help": "Sexo biológico (feminino associa-se a maior risco)."
+      "default": "Male",
+      "help": "Biological sex (female associated with higher risk)."
     },
     {
       "var": "BMI",
-      "label": "IMC (kg/m²)",
+      "label": "BMI (kg/m^2)",
       "tipo": "slider",
       "min": 15.0,
       "max": 50.0,
       "step": 0.1,
       "default": 26.0,
-      "help": "Peso/altura². IMC menor associa-se a maior risco (dose/kg)."
+      "help": "Weight/height^2. Lower BMI is associated with higher risk (dose per kg)."
     },
     {
       "var": "td_pigd_ratio",
-      "label": "Razão TD/PIGD",
+      "label": "TD/PIGD ratio",
       "tipo": "number",
       "min": 0.0,
       "max": 12.0,
       "step": 0.1,
       "default": 1.6,
-      "help": "Média dos itens de tremor ÷ média dos itens de PIGD (marcha, congelamento, instabilidade postural). <0,9 = PIGD-dominante (maior risco); >1,15 = tremor-dominante."
+      "help": "Mean tremor items / mean PIGD items (gait, freezing, postural instability). <0.9 = PIGD-dominant (higher risk); >1.15 = tremor-dominant."
     },
     {
       "var": "NP2FREZ",
-      "label": "Congelamento da marcha (MDS-UPDRS 2.13)",
+      "label": "Freezing of gait (MDS-UPDRS 2.13)",
       "tipo": "select",
       "options": {
-        "0 - Normal": 0,
-        "1 - Leve": 1,
-        "2 - Moderado": 2,
-        "3 - Grave": 3,
-        "4 - Incapacitante": 4
+        "0 - None": 0,
+        "1 - Slight": 1,
+        "2 - Mild": 2,
+        "3 - Moderate": 3,
+        "4 - Severe": 4
       },
-      "default": "0 - Normal",
-      "help": "Item 2.13 (autorrelato de congelamento)."
+      "default": "0 - None",
+      "help": "Item 2.13 (self-reported freezing)."
     }
   ],
   "means": {
@@ -167,9 +167,9 @@
     "7": 0.963,
     "10": 0.9195
   },
-  "nota_competitivo": "Risco de 7 e 10 anos ajustado por risco competitivo (morte) via Aalen-Johansen; 3 e 5 anos praticamente inalterados.",
+  "nota_competitivo": "7- and 10-year risk adjusted for the competing risk of death (Aalen-Johansen); 3 and 5 years practically unchanged.",
   "modelo_dinamico": {
-    "nota": "Modelo dinamico: Total-6 + responsividade a levodopa (continua, % de melhora UPDRS-III OFF->ON). Uso em SEGUIMENTO, apos challenge OFF/ON. Exploratorio.",
+    "nota": "Dynamic model: Total-6 + levodopa responsiveness (continuous, % improvement of MDS-UPDRS III OFF->ON). Use at follow-up, after an OFF/ON challenge. Exploratory.",
     "coeficientes": {
       "updrs_totscore": 0.020425076642149983,
       "ageonset": -0.03043798957782471,

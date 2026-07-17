@@ -1,9 +1,9 @@
 """
-Calculadora de risco de discinesia problematica induzida por levodopa.
-Coorte PPMI. Cox; formula fechada (numpy). Risco absoluto ajustado por risco competitivo (Aalen-Johansen).
-Dois modos: BASAL (Total-6, inicio da levodopa) e DINAMICO (Total-6 + responsividade, no seguimento).
-Layout robusto: entradas na barra lateral, resultados na area principal (sem colunas aninhadas).
-FERRAMENTA DE PESQUISA - nao substitui julgamento clinico.
+Risk calculator for problematic levodopa-induced dyskinesia.
+PPMI cohort. Cox; closed-form (numpy). Absolute risk adjusted for the competing risk of death (Aalen-Johansen).
+Two modes: BASELINE (Total-6, levodopa initiation) and DYNAMIC (Total-6 + responsiveness, at follow-up).
+Robust layout: inputs in the sidebar, results in the main area (no nested columns).
+RESEARCH TOOL - does not replace clinical judgement.
 """
 import json, os
 import numpy as np
@@ -32,10 +32,10 @@ def lp_generic(x, beta, means, keys):
 def risk_at(lp, s0, t):
     return float((1 - s0 ** np.exp(lp)) * cr_factor(t))
 
-st.set_page_config(page_title="Calculadora de discinesia (PPMI)", page_icon=":brain:", layout="wide")
+st.set_page_config(page_title="Dyskinesia risk calculator (PPMI)", page_icon=":brain:", layout="wide")
 
-# ------------------ BARRA LATERAL: entradas ------------------
-st.sidebar.header("Dados do paciente (1 consulta)")
+# ------------------ SIDEBAR: inputs ------------------
+st.sidebar.header("Patient data (single visit)")
 x = {}
 for it in A["inputs"]:
     v, lab, tp, hlp = it["var"], it["label"], it["tipo"], it.get("help", "")
@@ -49,42 +49,42 @@ for it in A["inputs"]:
         x[v] = opts[choice]
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("**Responsividade a levodopa** *(opcional - so no seguimento)*")
-tem_resp = "Nao"
+st.sidebar.markdown("**Levodopa responsiveness** *(optional - follow-up only)*")
+tem_resp = "No"
 resp_val = None
 if DYN:
     tem_resp = st.sidebar.radio(
-        "Voce ja conhece a responsividade a levodopa deste paciente?",
-        ["Nao", "Sim"],
-        help="Responsividade = melhora do MDS-UPDRS III do estado OFF para ON. So existe depois que o paciente ja usou levodopa.",
+        "Do you already know this patient's levodopa responsiveness?",
+        ["No", "Yes"],
+        help="Responsiveness = improvement of MDS-UPDRS III from OFF to ON. It only exists after the patient has taken levodopa.",
     )
-    if tem_resp == "Sim":
+    if tem_resp == "Yes":
         ri = DYN["resp_input"]
         resp_val = st.sidebar.number_input(
-            "Responsividade motora (% de melhora do MDS-UPDRS III: OFF -> ON)",
+            "Motor responsiveness (% improvement of MDS-UPDRS III: OFF -> ON)",
             float(ri["min"]), float(ri["max"]), float(ri["default"]), step=float(ri["step"]),
-            help="(UPDRS-III_OFF - UPDRS-III_ON) / UPDRS-III_OFF x 100. Ex.: OFF 40, ON 16 -> 60%.",
+            help="(UPDRS-III_OFF - UPDRS-III_ON) / UPDRS-III_OFF x 100. E.g., OFF 40, ON 16 -> 60%.",
         )
         if resp_val > 50:
-            st.sidebar.caption("Respondedor forte (>50%) - associado a MAIOR risco de discinesia.")
+            st.sidebar.caption("Strong responder (>50%) - associated with HIGHER dyskinesia risk.")
         elif resp_val >= 30:
-            st.sidebar.caption("Respondedor moderado.")
+            st.sidebar.caption("Moderate responder.")
         else:
-            st.sidebar.caption("Baixa responsividade - associada a MENOR risco.")
+            st.sidebar.caption("Low responsiveness - associated with LOWER risk.")
 
-modo_dinamico = bool(DYN) and tem_resp == "Sim" and resp_val is not None
+modo_dinamico = bool(DYN) and tem_resp == "Yes" and resp_val is not None
 
-# ------------------ AREA PRINCIPAL ------------------
-st.title("Risco de discinesia problematica induzida por levodopa")
+# ------------------ MAIN AREA ------------------
+st.title("Risk of problematic levodopa-induced dyskinesia")
 st.caption(
-    "Modelo prognostico (coorte PPMI) - desfecho: discinesia problematica "
-    "(MDS-UPDRS 4.1>=2 OU 4.2>=2) - tempo-zero = inicio da levodopa - risco absoluto ajustado por risco competitivo (morte)."
+    "Prognostic model (PPMI cohort) - outcome: problematic dyskinesia "
+    "(MDS-UPDRS 4.1>=2 OR 4.2>=2) - time-zero = levodopa initiation - absolute risk adjusted for the competing risk of death."
 )
 st.warning(
-    "Ferramenta de PESQUISA. Estima probabilidade de discinesia problematica, nao de qualquer discinesia. "
-    "Nao substitui o julgamento clinico. Validacao externa pendente (fase 2)."
+    "RESEARCH tool. Estimates the probability of *problematic* dyskinesia, not of any dyskinesia. "
+    "Does not replace clinical judgement. External validation (LARGE-PD): discrimination preserved (C~0.68); absolute risk may require local recalibration."
 )
-st.info("Preencha os dados do paciente na **barra lateral** (a esquerda). Se ela estiver fechada, clique na setinha `>` no canto superior esquerdo.")
+st.info("Fill in the patient data in the **sidebar** (left). If it is collapsed, click the `>` arrow at the top left.")
 
 try:
     if modo_dinamico:
@@ -94,82 +94,82 @@ try:
         grid_t, grid_s0 = DYN["baseline_survival_grid"]["t"], DYN["baseline_survival_grid"]["S0"]
         xf = dict(x); xf["resp"] = resp_val
         lp = lp_generic(xf, beta, means, keys)
-        st.subheader("Probabilidade estimada - modo DINAMICO (com responsividade)")
+        st.subheader("Estimated probability - DYNAMIC mode (with responsiveness)")
     else:
         s0_hor, grid_t, grid_s0 = S0_HOR, GRID_T, GRID_S0
         lp = lp_generic(x, BETA, MEANS, VARS)
-        st.subheader("Probabilidade estimada - modo BASAL (inicio da levodopa)")
+        st.subheader("Estimated probability - BASELINE mode (levodopa initiation)")
 
     probs = {h: risk_at(lp, s0_hor[h], h) for h in HOR}
     mc = st.columns(len(HOR))
     for c, h in zip(mc, HOR):
-        c.metric(str(h) + " anos", str(round(probs[h] * 100)) + "%")
+        c.metric(str(h) + " years", str(round(probs[h] * 100)) + "%")
 
     r5 = probs[5]
-    msg = "Probabilidade em 5 anos: **" + str(round(r5 * 100)) + "%**"
+    msg = "5-year probability: **" + str(round(r5 * 100)) + "%**"
     if r5 < 0.10:
-        st.success("Risco BAIXO - " + msg)
+        st.success("LOW risk - " + msg)
     elif r5 < 0.25:
-        st.warning("Risco INTERMEDIARIO - " + msg)
+        st.warning("INTERMEDIATE risk - " + msg)
     else:
-        st.error("Risco ALTO - " + msg)
+        st.error("HIGH risk - " + msg)
 
     curve = pd.DataFrame({
-        "Anos desde a levodopa": grid_t,
-        "Risco acumulado (%)": [(1 - s0 ** np.exp(lp)) * cr_factor(t) * 100 for t, s0 in zip(grid_t, grid_s0)],
-    }).set_index("Anos desde a levodopa")
+        "Years since levodopa": grid_t,
+        "Cumulative risk (%)": [(1 - s0 ** np.exp(lp)) * cr_factor(t) * 100 for t, s0 in zip(grid_t, grid_s0)],
+    }).set_index("Years since levodopa")
     st.line_chart(curve, height=280)
-    st.caption("Passe o mouse sobre a linha para ler o risco ano a ano.")
+    st.caption("Hover over the line to read the year-by-year risk.")
 except Exception as e:
-    st.error("Ocorreu um erro ao calcular. Detalhe abaixo (envie este texto ao desenvolvedor):")
+    st.error("An error occurred while computing. Details below (please send this text to the developer):")
     st.exception(e)
 
 st.divider()
-st.subheader("Qual calculadora usar? Conceitos")
+st.subheader("Which calculator to use? Concepts")
 cc1, cc2 = st.columns(2)
 with cc1:
     st.markdown(
-        "**Calculadora BASAL (6 variaveis) - modelo principal**\n\n"
-        "Use **no momento de iniciar a levodopa** (ou antes de prescrever). Estima o risco de "
-        "discinesia problematica com dados de **uma unica consulta**: MDS-UPDRS total (I+II+III), "
-        "idade de inicio, sexo, IMC, razao TD/PIGD e congelamento da marcha (item 2.13). "
-        "E o modelo validado internamente do estudo (C corrigido 0,70; leave-one-site-out 0,69; calibracao adequada)."
+        "**BASELINE calculator (6 variables) - main model**\n\n"
+        "Use **at the moment of starting levodopa** (or before prescribing). Estimates the risk of "
+        "problematic dyskinesia from **a single visit**: total MDS-UPDRS (I+II+III), age at onset, sex, "
+        "BMI, TD/PIGD ratio and freezing of gait (item 2.13). "
+        "This is the study's internally validated model (optimism-corrected C 0.70; leave-one-site-out 0.69; adequate calibration)."
     )
 with cc2:
     st.markdown(
-        "**Calculadora DINAMICA (6 variaveis + responsividade)**\n\n"
-        "Use **no seguimento**, depois que o paciente **ja respondeu a levodopa** e voce tem um par "
-        "**OFF/ON** do MDS-UPDRS III. Acrescenta a **responsividade motora** [(OFF-ON)/OFF x100]: "
-        "quanto **maior a melhora** com a levodopa, **maior** o risco de discinesia (o classico bom "
-        "respondedor que discinesia). Serve para **refinar** o prognostico com a informacao que so o "
-        "tratamento revela - nao substitui a basal."
+        "**DYNAMIC calculator (6 variables + responsiveness)**\n\n"
+        "Use **at follow-up**, after the patient **has responded to levodopa** and you have an "
+        "**OFF/ON** MDS-UPDRS III pair. It adds **motor responsiveness** [(OFF-ON)/OFF x100]: "
+        "the **greater the improvement** with levodopa, the **higher** the dyskinesia risk (the classic good "
+        "responder who develops dyskinesia). It **refines** the prognosis with information that only "
+        "treatment reveals - it does not replace the baseline model."
     )
 
-st.markdown("**Quando usar a dinamica (e quando NAO):**")
+st.markdown("**When to use the dynamic model (and when NOT):**")
 st.markdown(
-    "- **Use** quando o paciente ja esta em levodopa e a resposta motora e conhecida (challenge OFF/ON "
-    "ou avaliacao ON vs OFF documentada).\n"
-    "- **Nao use** no primeiro dia de levodopa - ainda nao existe responsividade; nesse caso use a **basal**."
+    "- **Use it** when the patient is already on levodopa and the motor response is known (OFF/ON challenge "
+    "or documented ON vs OFF assessment).\n"
+    "- **Do not use it** on the first day of levodopa - responsiveness does not exist yet; use the **baseline** model instead."
 )
 
 lim_n = str(DYN["n"]) if DYN else "-"
 lim_dc = str(DYN["desempenho"]["dC_apparent"]) if DYN else "-"
 st.warning(
-    "**Limitacoes da calculadora dinamica (exploratoria):**\n\n"
-    "1. **Ganho pequeno de discriminacao** (delta-C aparente ~ +" + lim_dc + " sobre a basal no mesmo grupo; C ~0,70). "
-    "E um refinamento, nao um salto de performance.\n"
-    "2. **Subgrupo menor** (n=" + lim_n + " vs 813), pois exige MDS-UPDRS III medido em OFF e em ON.\n"
-    "3. A responsividade e um **marcador pos-basal** (medido durante o seguimento): interprete como "
-    "**atualizacao** do risco, nao como fator causal de tempo-zero.\n"
-    "4. Depende da **qualidade/definicao do challenge** OFF/ON (padronizacao do estado OFF, tempo de pico ON).\n"
-    "5. **Validacao externa pendente** (fase 2) - vale para as duas calculadoras."
+    "**Limitations of the dynamic calculator (exploratory):**\n\n"
+    "1. **Small discrimination gain** (apparent delta-C ~ +" + lim_dc + " over the baseline in the same group; C ~0.70). "
+    "It is a refinement, not a performance leap.\n"
+    "2. **Smaller subgroup** (n=" + lim_n + " vs 813), since it requires MDS-UPDRS III measured OFF and ON.\n"
+    "3. Responsiveness is a **post-baseline marker** (measured during follow-up): interpret it as a risk "
+    "**update**, not as a time-zero causal factor.\n"
+    "4. It depends on the **quality/definition of the OFF/ON challenge** (standardization of the OFF state, ON peak timing).\n"
+    "5. **External validation** (LARGE-PD, n=159, admixed ancestry): **discrimination** held (C 0.68), but **absolute calibration** required recalibration - the model tends to **over-predict** in more advanced populations, so the percentages should be read as risk **stratification**, not exact probability."
 )
 
 st.divider()
 perf = A["desempenho"]
-st.markdown("**Variaveis basais (6):** MDS-UPDRS total (I+II+III), idade de inicio, sexo, IMC, "
-            "razao TD/PIGD e congelamento da marcha (item 2.13) - todas de uma consulta, sem exame complementar.")
-st.markdown("**Desempenho basal (PPMI, n=" + str(A["n"]) + ", " + str(A["eventos"]) + " eventos):** C-index corrigido **" +
-            str(perf["C_corrigido"]) + "** - leave-one-site-out **" + str(perf["C_LOSO"]) + "** - calibracao " + perf["calibracao"] + ".")
-st.caption("Dados: PPMI (cut 29-Abr-2026). Relato TRIPOD. Risco de 7/10 anos ajustado por risco competitivo (morte) via Aalen-Johansen. "
-           "Genetica, neuroimagem e biomarcadores testados e nao acrescentaram discriminacao.")
+st.markdown("**Baseline variables (6):** total MDS-UPDRS (I+II+III), age at onset, sex, BMI, "
+            "TD/PIGD ratio and freezing of gait (item 2.13) - all from a single visit, no ancillary tests.")
+st.markdown("**Baseline performance (PPMI, n=" + str(A["n"]) + ", " + str(A["eventos"]) + " events):** optimism-corrected C-index **" +
+            str(perf["C_corrigido"]) + "** - leave-one-site-out **" + str(perf["C_LOSO"]) + "** - calibration " + perf["calibracao"] + ".")
+st.caption("Data: PPMI (cut 29-Apr-2026). TRIPOD reporting. 7/10-year risk adjusted for the competing risk of death (Aalen-Johansen). "
+           "Genetics, neuroimaging and biomarkers were tested and did not add discrimination.")
