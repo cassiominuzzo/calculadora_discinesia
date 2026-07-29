@@ -101,9 +101,18 @@ try:
         st.subheader("Estimated probability - BASELINE mode (levodopa initiation)")
 
     probs = {h: risk_at(lp, s0_hor[h], h) for h in HOR}
+    # Patients still at risk at each horizon in the PPMI development cohort (n=813).
+    # Shown next to each estimate so that the uncertainty travels with the number.
+    AT_RISK = {3: 325, 5: 185, 7: 113, 10: 41}
     mc = st.columns(len(HOR))
     for c, h in zip(mc, HOR):
         c.metric(str(h) + " years", str(round(probs[h] * 100)) + "%")
+        n_risk = AT_RISK.get(h)
+        if n_risk is not None:
+            if n_risk < 150:
+                c.caption(":warning: based on only " + str(n_risk) + " patients still at risk")
+            else:
+                c.caption("based on " + str(n_risk) + " patients still at risk")
 
     r5 = probs[5]
     msg = "5-year probability: **" + str(round(r5 * 100)) + "%**"
@@ -119,7 +128,9 @@ try:
         "Cumulative risk (%)": [(1 - s0 ** np.exp(lp)) * cr_factor(t) * 100 for t, s0 in zip(grid_t, grid_s0)],
     }).set_index("Years since levodopa")
     st.line_chart(curve, height=280)
-    st.caption("Hover over the line to read the year-by-year risk.")
+    st.caption("Hover over the line to read the year-by-year risk. Follow-up in the development cohort thins after 5 years "
+               "(325 patients at risk at 3 years, 185 at 5, 113 at 7 and 41 at 10), so estimates at the longer horizons "
+               "are imprecise and should be read as broad indications rather than exact probabilities.")
 except Exception as e:
     st.error("An error occurred while computing. Details below (please send this text to the developer):")
     st.exception(e)
