@@ -14,5 +14,7 @@ stratification rather than exact probability outside PPMI.
 Live app: https://calculadoradiscinesia-9vdp7aarb9g6euqigpkhhb.streamlit.app/
 Pre-registration and model artifacts: https://doi.org/10.17605/OSF.IO/TUVBW
 
-Contents: `app.py` (calculator), `calculator_artifacts.json` (frozen model),
-`requirements.txt`.
+- `app.py`, `calculator_artifacts.json` — the calculator and the frozen model
+- `analysis/` — code that reproduces the manuscript (see `analysis/README.md`)
+
+Licensed under MIT.
