@@ -56,6 +56,7 @@ Run in order. Each script states at the top which manuscript element it produces
 | `24_supplementary_figure_S2.py` | Supplementary Figure S2 |
 | `25_figure2_km_tertiles.py` | Figure 2, including the numbers-at-risk table |
 | `26_figure4_decision_curve.py` | Figure 4, two-panel decision curve |
+| `27_treatments_at_time_zero.py` | Treatment rows of Table 1 (levodopa dose, LEDD, agonist, amantadine) |
 
 Every figure and table in the manuscript and in the supplement is produced by a
 script in this folder. Figures are written to `04_Resultados/Figuras/` in PNG, SVG
