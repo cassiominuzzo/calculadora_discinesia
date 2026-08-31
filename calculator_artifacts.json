@@ -10,9 +10,15 @@
   "n": 813,
   "eventos": 165,
   "desempenho": {
-    "C_corrigido": 0.702,
-    "C_LOSO": 0.69,
-    "calibracao": "adequate at 3/5/7/10y"
+    "C_aparente": 0.712,
+    "C_corrigido": 0.701,
+    "C_corrigido_IC95": [0.656, 0.75],
+    "C_fora_da_amostra": 0.696,
+    "LOSO_sitios_avaliaveis": 23,
+    "LOSO_mediana": 0.727,
+    "LOSO_IIQ": [0.576, 0.79],
+    "LOSO_ponderada_por_eventos": 0.666,
+    "calibracao": "observed-to-expected 1.02, 1.02 and 1.02 at 3, 5 and 7 years"
   },
   "coeficientes": {
     "updrs_totscore": 0.01820067483435665,
@@ -23,7 +29,7 @@
     "NP2FREZ": 0.25736201135635567
   },
   "baseline_survival_hor": {
-    "3": 0.8878055187396627,
+    "3": 0.8926704619147218,
     "5": 0.7816301115216746,
     "7": 0.6425648352777131,
     "10": 0.4508249519838049
@@ -136,27 +142,27 @@
       0.99461,
       0.97939,
       0.96316,
-      0.93569,
-      0.91281,
-      0.88781,
+      0.93744,
+      0.91306,
+      0.89267,
       0.86583,
-      0.8503,
-      0.8243,
+      0.85030,
+      0.82622,
       0.78163,
       0.75216,
-      0.71737,
+      0.71980,
       0.68001,
       0.64256,
       0.61295,
       0.60036,
-      0.534,
-      0.51601,
-      0.4873,
+      0.53400,
+      0.51609,
+      0.49660,
       0.45082,
       0.37507,
       0.35605,
       0.31482,
-      0.2966,
+      0.31482,
       0.25566,
       0.25566
     ]
@@ -168,6 +174,17 @@
     "10": 0.9195
   },
   "nota_competitivo": "7- and 10-year risk adjusted for the competing risk of death (Aalen-Johansen); 3 and 5 years practically unchanged.",
+  "proveniencia": {
+    "modelo": "Total-6, Cox com penalizacao ridge 0.05, n = 813, 165 eventos",
+    "coeficientes_e_medias": "inalterados; conferem com a Table 2, com calculator_model.pkl e com os JSON dos scripts 32, 33, 39 e 45",
+    "sobrevida_basal": "convencao de degrau: baseline_survival_ lida no ultimo tempo de evento menor ou igual ao horizonte, identica a cohort.baseline_survival_at e a 32_internal_performance.py; confere com calculator_model.pkl em precisao de maquina",
+    "sobrevida_basal_anterior": "interpolada por predict_survival_function; diferia so em 3 anos, 0.8878055187396627 contra 0.8926704619147218, o que deixava a Table 2 e a calibracao publicada usando S0 diferentes no mesmo horizonte",
+    "desempenho_fonte": "03_Resultados/Tabelas/tab32_internal_performance.json",
+    "competing_risk_factor_fonte": "03_Resultados/Tabelas/tab45_risco_competitivo.csv, Aalen-Johansen dividido pelo Kaplan-Meier ingenuo",
+    "modelo_dinamico_nota": "bloco preservado sem alteracao; ainda usa a convencao interpolada e sera regravado ao reexecutar 06_dynamic_model_refit.py",
+    "script_de_regravacao": "02_Codigo/pipeline/46_calculator_artifacts.py",
+    "revisado_em": "2026-08-31"
+  },
   "modelo_dinamico": {
     "nota": "Dynamic model: Total-6 + levodopa responsiveness (continuous, % improvement of MDS-UPDRS III OFF->ON). Use at follow-up, after an OFF/ON challenge. Exploratory.",
     "coeficientes": {

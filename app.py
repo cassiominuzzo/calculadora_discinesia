@@ -20,8 +20,11 @@ GRID_S0 = A["baseline_survival_grid"]["S0"]
 VARS = [i["var"] for i in A["inputs"]]
 DYN = A.get("modelo_dinamico")
 CRF = {int(k): v for k, v in A.get("competing_risk_factor", {}).items()}
-CR_T = sorted(CRF) if CRF else [3, 5, 7, 10]
-CR_V = [CRF.get(t, 1.0) for t in CR_T] if CRF else [1, 1, 1, 1]
+# The competing-risk factor is anchored at c(0) = 1, because no one has died at
+# time-zero. Without that anchor the factor stayed flat at 1 up to three years and
+# then stepped down, which put a visible discontinuity in the plotted curve at t = 3.
+CR_T = ([0.0] + sorted(CRF)) if CRF else [0.0, 3.0, 5.0, 7.0, 10.0]
+CR_V = ([1.0] + [CRF[t] for t in sorted(CRF)]) if CRF else [1.0, 1.0, 1.0, 1.0, 1.0]
 
 def cr_factor(t):
     return float(np.interp(t, CR_T, CR_V, left=1.0, right=CR_V[-1]))
@@ -82,7 +85,7 @@ st.caption(
 )
 st.warning(
     "RESEARCH tool. Estimates the probability of *problematic* dyskinesia, not of any dyskinesia. "
-    "Does not replace clinical judgement. External validation (LARGE-PD): discrimination preserved (C~0.68); absolute risk may require local recalibration."
+    "Does not replace clinical judgement. Internally well calibrated (observed-to-expected 1.02 at 3, 5 and 7 years) and validated in a later PPMI recruitment wave (C 0.74); absolute risk may require local recalibration. Not validated outside PPMI."
 )
 st.info("Fill in the patient data in the **sidebar** (left). If it is collapsed, click the `>` arrow at the top left.")
 
@@ -114,14 +117,25 @@ try:
             else:
                 c.caption("based on " + str(n_risk) + " patients still at risk")
 
+    # Observed five-year cumulative incidence in the development cohort (Kaplan-Meier,
+    # n = 813, 165 events). Used only as a reference point, not as a decision threshold:
+    # the model imposes none, and the study reports none.
+    INCIDENCE_5Y = 0.240
     r5 = probs[5]
-    msg = "5-year probability: **" + str(round(r5 * 100)) + "%**"
-    if r5 < 0.10:
-        st.success("LOW risk - " + msg)
-    elif r5 < 0.25:
-        st.warning("INTERMEDIATE risk - " + msg)
+    msg = ("5-year probability: **" + str(round(r5 * 100)) + "%**, against a "
+           + str(round(INCIDENCE_5Y * 100)) + "% five-year incidence in the development cohort")
+    if r5 < INCIDENCE_5Y / 2:
+        st.success("Well below the cohort incidence - " + msg)
+    elif r5 < INCIDENCE_5Y:
+        st.info("Below the cohort incidence - " + msg)
     else:
-        st.error("HIGH risk - " + msg)
+        st.warning("Above the cohort incidence - " + msg)
+    st.caption(
+        "These bands say where the estimate sits relative to the development cohort. "
+        "They are **not** decision thresholds: the model imposes none, and the risk above which "
+        "acting is worthwhile depends on what the result will be used for. In the internal "
+        "decision-curve analysis net benefit was positive from about 6% to 50%."
+    )
 
     curve = pd.DataFrame({
         "Years since levodopa": grid_t,
@@ -130,7 +144,10 @@ try:
     st.line_chart(curve, height=280)
     st.caption("Hover over the line to read the year-by-year risk. Follow-up in the development cohort thins after 5 years "
                "(325 patients at risk at 3 years, 185 at 5, 113 at 7 and 41 at 10), so estimates at the longer horizons "
-               "are imprecise and should be read as broad indications rather than exact probabilities.")
+               "are imprecise and should be read as broad indications rather than exact probabilities. "
+               "At the top of the range the model also saturates: once the predicted risk approaches 90%, two patients "
+               "with clearly different risk scores receive almost the same number, so the ordering of patients stays "
+               "informative there while the exact percentage stops being so.")
 except Exception as e:
     st.error("An error occurred while computing. Details below (please send this text to the developer):")
     st.exception(e)
@@ -144,7 +161,8 @@ with cc1:
         "Use **at the moment of starting levodopa** (or before prescribing). Estimates the risk of "
         "problematic dyskinesia from **a single visit**: total MDS-UPDRS (I+II+III), age at onset, sex, "
         "BMI, TD/PIGD ratio and freezing of gait (item 2.13). "
-        "This is the study's internally validated model (optimism-corrected C 0.70; leave-one-site-out 0.69; adequate calibration)."
+        "This is the study's internally validated model: optimism-corrected C 0.70 (95% CI 0.66 to 0.75), "
+        "out-of-fold C 0.70, and observed-to-expected 1.02 at 3, 5 and 7 years."
     )
 with cc2:
     st.markdown(
@@ -167,20 +185,36 @@ lim_n = str(DYN["n"]) if DYN else "-"
 lim_dc = str(DYN["desempenho"]["dC_apparent"]) if DYN else "-"
 st.warning(
     "**Limitations of the dynamic calculator (exploratory):**\n\n"
-    "1. **Small discrimination gain** (apparent delta-C ~ +" + lim_dc + " over the baseline in the same group; C ~0.70). "
-    "It is a refinement, not a performance leap.\n"
+    "1. **No measurable discrimination gain.** The apparent delta-C over the baseline model in the same "
+    "patients is +" + lim_dc + ", but out of fold it is **+0.0001**, that is, nothing. Responsiveness is "
+    "associated with the outcome (hazard ratio 1.19 per standard deviation, p = 0.045) without improving "
+    "how well patients are ranked. Treat this mode as a way of thinking about the association, not as a "
+    "better predictor.\n"
     "2. **Smaller subgroup** (n=" + lim_n + " vs 813), since it requires MDS-UPDRS III measured OFF and ON.\n"
     "3. Responsiveness is a **post-baseline marker** (measured during follow-up): interpret it as a risk "
     "**update**, not as a time-zero causal factor.\n"
     "4. It depends on the **quality/definition of the OFF/ON challenge** (standardization of the OFF state, ON peak timing).\n"
-    "5. **External validation** (LARGE-PD, n=159, admixed ancestry): **discrimination** held (C 0.68), but **absolute calibration** required recalibration - the model tends to **over-predict** in more advanced populations, so the percentages should be read as risk **stratification**, not exact probability."
+    "5. **Temporal validation** (later PPMI recruitment wave, n=421, 20 events, 15 sites absent from the earlier wave): **discrimination** held (C 0.74, 95% CI 0.64 to 0.83) and the calibration slope was 1.00, but absolute risk was **over-predicted** by about a quarter in that lower-risk wave, so the percentages should be read as risk **stratification**, not exact probability. The model has **not** been validated outside PPMI."
 )
 
 st.divider()
 perf = A["desempenho"]
 st.markdown("**Baseline variables (6):** total MDS-UPDRS (I+II+III), age at onset, sex, BMI, "
             "TD/PIGD ratio and freezing of gait (item 2.13) - all from a single visit, no ancillary tests.")
-st.markdown("**Baseline performance (PPMI, n=" + str(A["n"]) + ", " + str(A["eventos"]) + " events):** optimism-corrected C-index **" +
-            str(perf["C_corrigido"]) + "** - leave-one-site-out **" + str(perf["C_LOSO"]) + "** - calibration " + perf["calibracao"] + ".")
+ci = perf["C_corrigido_IC95"]
+iqr = perf["LOSO_IIQ"]
+st.markdown(
+    "**Baseline performance (PPMI, n=" + str(A["n"]) + ", " + str(A["eventos"]) + " events):** "
+    "apparent C-index " + str(perf["C_aparente"]) + " - optimism-corrected **" + str(perf["C_corrigido"]) +
+    "** (95% CI " + str(ci[0]) + " to " + str(ci[1]) + ") - out-of-fold " + str(perf["C_fora_da_amostra"]) +
+    " - calibration " + perf["calibracao"] + "."
+)
+st.caption(
+    "Leave-one-site-out cross-validation, restricted to the " + str(perf["LOSO_sitios_avaliaveis"]) +
+    " of 50 sites with at least ten participants and two events, gave a median site-level C of " +
+    str(perf["LOSO_mediana"]) + " (IQR " + str(iqr[0]) + " to " + str(iqr[1]) + ") and an event-weighted mean of " +
+    str(perf["LOSO_ponderada_por_eventos"]) + ". The spread reflects a median of five events per site rather than "
+    "genuine heterogeneity in performance."
+)
 st.caption("Data: PPMI (cut 29-Apr-2026). TRIPOD reporting. 7/10-year risk adjusted for the competing risk of death (Aalen-Johansen). "
            "Genetics, neuroimaging and biomarkers were tested and did not add discrimination.")
